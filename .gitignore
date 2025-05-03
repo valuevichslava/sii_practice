@@ -1,0 +1,18 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Данные
+static/uploads/
+static/results/
+reports/
+history.json
+
+# Модели
+*.pt
+*.weights
+
+# Системные файлы
+.DS_Store
+.env
