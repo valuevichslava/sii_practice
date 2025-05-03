@@ -147,6 +147,18 @@ def process_video(video_path):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+
+    history = []
+    # Загружаем историю при любой загрузке страницы
+    if os.path.exists(app.config['HISTORY_FILE']):
+        with open(app.config['HISTORY_FILE'], 'r') as f:
+            try:
+                history = json.load(f)
+                # Сортируем по дате в обратном порядке
+                history = sorted(history, key=lambda x: x['date'], reverse=True)
+            except json.JSONDecodeError:
+                pass
+
     if request.method == 'POST':
         file = request.files['file']
         if file:
@@ -164,11 +176,12 @@ def index():
             update_history(filename, file_type, count)
             
             return render_template('index.html', 
-                                 result_file=result_path,
-                                 file_type=file_type,
-                                 detection_count=count)
+                             result_file=result_path,
+                             file_type=file_type,
+                             detection_count=count,
+                             history=history)  # Добавляем историю в вывод
     
-    return render_template('index.html')
+    return render_template('index.html', history=history)
 
 @app.route('/report')
 def generate_report():
@@ -179,6 +192,9 @@ def generate_report():
         history = json.load(f)
     
     df = pd.DataFrame(history)
+    df = pd.DataFrame(history)
+    df['date'] = pd.to_datetime(df['date'])
+    df = df.sort_values('date', ascending=False)
     excel_path = os.path.join(app.config['REPORTS_FOLDER'], 'cow_report.xlsx')
     
     # Добавлен параметр engine
